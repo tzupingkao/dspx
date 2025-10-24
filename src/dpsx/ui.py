@@ -1,9 +1,7 @@
 from __future__ import annotations
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 from blessed import Terminal
 from wcwidth import wcswidth
-import time
-
 
 # 欄位定義：name=欄位鍵, title=表頭, minw=最小寬度, maxw=偏好寬度, prio=優先度（數字越小越重要）
 COLUMNS = [
@@ -40,6 +38,30 @@ def ellipsize_middle(s: str, width: int) -> str:
     head = max(1, width // 2 - 1)
     tail = max(1, width - head - 1)
     return s[:head] + "…" + s[-tail:]
+
+
+# ---- Blessed 能力安全包裝（避免 'dim' 或某些能力在終端不支援而噴錯）----
+
+def _safe_cap(term: Terminal, cap: str):
+    """返回一個安全的格式化函數；若不支援，回傳原字串。"""
+    fn = getattr(term, cap, None)
+    if callable(fn):
+        try:
+            _ = fn("")  # 試呼叫一次，若不支援會丟例外
+            return fn
+        except Exception:
+            pass
+    return lambda s="": s
+
+
+# 取得常用能力（若不支援則為 no-op）
+
+def _caps(term: Terminal):
+    return {
+        "reverse": _safe_cap(term, "reverse"),
+        "dim": _safe_cap(term, "dim"),
+        "bold": _safe_cap(term, "bold"),
+    }
 
 
 def fit_columns(term_width: int, density: int) -> List[Dict[str, Any]]:
@@ -101,59 +123,9 @@ def format_row(row: Dict[str, Any], visible_cols: List[Dict[str, Any]]) -> str:
     return " ".join(parts)
 
 
-def draw_table(term: Terminal, rows: List[Dict[str, Any]], selected: int, expanded: set[int],
-               visible_cols: List[Dict[str, Any]], filter_text: str, density: int) -> None:
-    print(term.home + term.clear)
-
-    # 標頭
-    title = f"dpsx — Docker TUI  |  n={len(rows)}  |  filter=/{filter_text or '-'}  |  density={density}  |  q=quit"
-    print(term.bold(title[:term.width]))
-
-    # 欄位列
-    header = " ".join(ellipsize_middle(c["title"], c["width"]).ljust(c["width"]) for c in visible_cols)
-    print(term.reverse(header))
-
-    # 可顯示高度（扣掉標頭 2 行 + footer 1 行）
-    max_lines = max(0, term.height - 3)
-
-    # 捲動視窗起點
-    start = 0
-    # 讓選取列盡量可見
-    if selected >= max_lines:
-        start = selected - max_lines + 1
-
-    y = 0
-    idx = 0
-    for i, row in enumerate(rows):
-        if i < start:
-            continue
-        if y >= max_lines:
-            break
-
-        line = format_row(row, visible_cols)
-        if i == selected:
-            print(term.on_darkolivegreen3(term.black(line)))
-        else:
-            print(line)
-        y += 1
-
-        if i in expanded and y < max_lines:
-            # 詳細列（多行），以 ↳ 開頭
-            detail_lines = build_detail_lines(row, term.width)
-            for dl in detail_lines:
-                if y >= max_lines:
-                    break
-                print(term.dim("↳ " + dl[: max(0, term.width - 2)]))
-                y += 1
-        idx += 1
-
-    # footer
-    help_bar = "↑/↓/j/k 移動  Enter/Space 展開  / 篩選  c 清除  r 重新整理  1/2/3 密度  q 離開"
-    print(term.move(term.height - 1, 0) + term.reverse(help_bar[:term.width]))
-
-
 def build_detail_lines(row: Dict[str, Any], maxw: int) -> List[str]:
     kv = []
+
     def add(label: str, value: str):
         if not value:
             return
@@ -181,3 +153,52 @@ def build_detail_lines(row: Dict[str, Any], maxw: int) -> List[str]:
             lines.append(s[:pos])
             s = s[pos:].lstrip()
     return lines
+
+
+def draw_table(term: Terminal, rows: List[Dict[str, Any]], selected: int, expanded: set[int],
+               visible_cols: List[Dict[str, Any]], filter_text: str, density: int) -> None:
+    caps = _caps(term)
+    print(term.home + term.clear)
+
+    # 標頭
+    title = f"dpsx — Docker TUI  |  n={len(rows)}  |  filter=/{filter_text or '-'}  |  density={density}  |  q=quit"
+    print(caps["bold"](title[:term.width]))
+
+    # 欄位列
+    header = " ".join(ellipsize_middle(c["title"], c["width"]).ljust(c["width"]) for c in visible_cols)
+    print(caps["reverse"](header))
+
+    # 可顯示高度（扣掉標頭 2 行 + footer 1 行）
+    max_lines = max(0, term.height - 3)
+
+    # 捲動視窗起點
+    start = 0
+    if selected >= max_lines:
+        start = selected - max_lines + 1
+
+    y = 0
+    for i, row in enumerate(rows):
+        if i < start:
+            continue
+        if y >= max_lines:
+            break
+
+        line = format_row(row, visible_cols)
+        if i == selected:
+            print(caps["reverse"](line))  # 使用 reverse 高亮，較通用
+        else:
+            print(line)
+        y += 1
+
+        if i in expanded and y < max_lines:
+            # 詳細列（多行），以 ↳ 開頭
+            detail_lines = build_detail_lines(row, term.width)
+            for dl in detail_lines:
+                if y >= max_lines:
+                    break
+                print(caps["dim"]("↳ " + dl[: max(0, term.width - 2)]))
+                y += 1
+
+    # footer
+    help_bar = "↑/↓/j/k 移動  Enter/Space 展開  / 篩選  c 清除  r 重新整理  1/2/3 密度  q 離開"
+    print(term.move(term.height - 1, 0) + caps["reverse"](help_bar[:term.width]))

@@ -1,2 +1,4 @@
 .venv
 .vscode
+__pycache__
+src/dpsx/__pycache__

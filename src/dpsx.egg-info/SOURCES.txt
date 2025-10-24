@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/dpsx/__init__.py
+src/dpsx/__main__.py
+src/dpsx/docker_client.py
+src/dpsx/ui.py
+src/dpsx.egg-info/PKG-INFO
+src/dpsx.egg-info/SOURCES.txt
+src/dpsx.egg-info/dependency_links.txt
+src/dpsx.egg-info/entry_points.txt
+src/dpsx.egg-info/requires.txt
+src/dpsx.egg-info/top_level.txt

@@ -1,0 +1,42 @@
+Metadata-Version: 2.4
+Name: dpsx
+Version: 0.1.0
+Summary: Blessed TUI for viewing Docker containers (ps -a replacement)
+Author: Ziping Gao
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Environment :: Console :: Curses
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: blessed>=1.20
+Requires-Dist: docker>=7.0
+Requires-Dist: wcwidth>=0.2
+Requires-Dist: humanize>=4.9
+
+使用
+
+方向鍵或 j/k：移動選取列
+
+Enter / Space：展開/收起選取列的詳細資訊
+
+/：輸入關鍵字篩選（比對容器名稱、影像、狀態等）
+
+c：清除篩選
+
+r：重新整理
+
+1/2/3：切換密度（精簡/一般/寬鬆）
+
+q：離開
+
+功能
+
+欄位自動收合：當終端機寬度不夠時，低優先度欄位會隱藏
+
+智慧省略：使用中間省略（abcd…wxyz），並考慮寬字元寬度（wcwidth）
+
+列展開：在選取列下方顯示 Labels、Ports、Networks、Mounts、Command 等詳細資訊
+
+即時刷新與關鍵字過濾

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "dpsx"
+version = "0.1.0"
+description = "Blessed TUI for viewing Docker containers (ps -a replacement)"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Ziping Gao" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Environment :: Console :: Curses",
+    "Operating System :: OS Independent",
+]
+
+
+# 🛠️ 這裡已修改為標準的 TOML 陣列格式
+dependencies = [
+    "blessed>=1.20",
+    "docker>=7.0",
+    "wcwidth>=0.2",
+    "humanize>=4.9",
+]
+
+
+[project.scripts]
+dpsx = "dpsx.__main__:main"
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.setuptools.package-data]
+"dpsx" = ["py.typed"]

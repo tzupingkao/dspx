@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "dpsx (module, external terminal)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "dpsx",                  // 以模組方式啟動等同 `python -m dpsx`
+      "console": "externalTerminal",     // 用外部終端，curses 最穩
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "LANG": "en_US.UTF-8",
+        "LC_ALL": "en_US.UTF-8"
+      }
+    }
+  ]
+}

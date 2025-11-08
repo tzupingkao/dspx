@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run module (external terminal)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "dpsx",                 // 這裡填你的模組名
+      "console": "externalTerminal",    // TUI/ curses 建議外部終端；一般專案也可用 integratedTerminal
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true,
+      "env": {
+        "LANG": "en_US.UTF-8",
+        "LC_ALL": "en_US.UTF-8"
+      }
+    }
+  ]
+}

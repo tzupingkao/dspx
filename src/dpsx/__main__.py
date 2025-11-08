@@ -98,3 +98,7 @@ def _prompt(term: Terminal, prefix: str = "") -> str:
             buf += str(k)
         # 更新顯示
         print(term.move(term.height - 1, 0) + term.clear_eol + term.reverse(prefix + buf), end="", flush=True)
+
+
+if __name__ == "__main__":
+    main()   # ← 這行很關鍵，讓 `python -m dpsx` 也會執行
